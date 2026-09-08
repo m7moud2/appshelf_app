@@ -94,17 +94,20 @@ class PublisherInfo {
     required this.name,
     required this.verified,
     this.website,
+    this.slug,
   });
 
   final String name;
   final bool verified;
   final String? website;
+  final String? slug;
 
   factory PublisherInfo.fromJson(Map<String, dynamic> json) {
     return PublisherInfo(
       name: json['name']?.toString() ?? 'مطوّر',
       verified: json['verified'] == true,
       website: json['website']?.toString(),
+      slug: json['slug']?.toString(),
     );
   }
 }
@@ -167,6 +170,41 @@ class AppUser {
       subscriptionPlan: json['subscriptionPlan']?.toString() ??
           json['plan']?.toString(),
       developerStatus: json['developerStatus']?.toString(),
+    );
+  }
+}
+
+class DeveloperProfile {
+  const DeveloperProfile({
+    required this.slug,
+    required this.name,
+    required this.bio,
+    required this.verified,
+    required this.apps,
+    this.country,
+    this.website,
+  });
+
+  final String slug;
+  final String name;
+  final String bio;
+  final bool verified;
+  final String? country;
+  final String? website;
+  final List<StoreApp> apps;
+
+  factory DeveloperProfile.fromJson(Map<String, dynamic> json) {
+    return DeveloperProfile(
+      slug: json['slug']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'مطوّر',
+      bio: json['bio']?.toString() ?? '',
+      verified: json['verified'] == true,
+      country: json['country']?.toString(),
+      website: json['website']?.toString(),
+      apps: (json['apps'] as List<dynamic>? ?? [])
+          .whereType<Map>()
+          .map((e) => StoreApp.fromJson(Map<String, dynamic>.from(e)))
+          .toList(),
     );
   }
 }

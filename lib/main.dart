@@ -12,7 +12,9 @@ import 'providers/store_provider.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/shell_screen.dart';
 import 'screens/splash_screen.dart';
+import 'screens/app_detail_screen.dart';
 import 'services/api_client.dart';
+import 'services/deep_link.dart';
 import 'services/notification_service.dart';
 import 'theme/app_theme.dart';
 
@@ -34,10 +36,12 @@ class _AppShelfBootstrapState extends State<AppShelfBootstrap> {
   late final AuthProvider _auth = AuthProvider(_api);
   late final StoreProvider _store = StoreProvider(_api);
   late final LibraryProvider _library = LibraryProvider(_api);
+  final _navigatorKey = GlobalKey<NavigatorState>();
 
   bool _ready = false;
   bool _splashDone = false;
   bool _onboardingDone = true;
+  String? _pendingDeepLinkSlug;
 
   @override
   void initState() {
@@ -60,6 +64,30 @@ class _AppShelfBootstrapState extends State<AppShelfBootstrap> {
       await _library.refresh(requireAuth: false);
     }
     if (mounted) setState(() => _ready = true);
+    _openPendingDeepLink();
+  }
+
+  void _openPendingDeepLink() {
+    final slug = _pendingDeepLinkSlug;
+    if (slug == null || slug.isEmpty) return;
+    _pendingDeepLinkSlug = null;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _navigatorKey.currentState?.push(
+        MaterialPageRoute(builder: (_) => AppDetailScreen(slug: slug)),
+      );
+    });
+  }
+
+  void handleIncomingUrl(String? url) {
+    final slug = parseAppSlugFromUrl(url);
+    if (slug == null) return;
+    if (!_ready || !_splashDone || !_onboardingDone) {
+      _pendingDeepLinkSlug = slug;
+      return;
+    }
+    _navigatorKey.currentState?.push(
+      MaterialPageRoute(builder: (_) => AppDetailScreen(slug: slug)),
+    );
   }
 
   @override
@@ -72,6 +100,7 @@ class _AppShelfBootstrapState extends State<AppShelfBootstrap> {
         ChangeNotifierProvider.value(value: _library),
       ],
       child: MaterialApp(
+        navigatorKey: _navigatorKey,
         title: 'رف التطبيقات',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light(),

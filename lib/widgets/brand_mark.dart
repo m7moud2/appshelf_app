@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../theme/app_theme.dart';
 
@@ -15,11 +16,6 @@ class BrandMark extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(radius),
-        gradient: const LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-          colors: [AsColors.primary, AsColors.primaryDeep],
-        ),
         boxShadow: [
           BoxShadow(
             color: AsColors.primaryDeep.withOpacity(0.18),
@@ -28,12 +24,12 @@ class BrandMark extends StatelessWidget {
           ),
         ],
       ),
-      child: Center(
-        child: Icon(
-          Icons.apps_rounded,
-          color: Colors.white.withOpacity(0.95),
-          size: size * 0.48,
-        ),
+      clipBehavior: Clip.antiAlias,
+      child: SvgPicture.asset(
+        'assets/brand/appshelf-mark.svg',
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
       ),
     );
   }

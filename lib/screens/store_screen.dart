@@ -6,7 +6,9 @@ import '../providers/store_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/brand_mark.dart';
 import '../widgets/common_widgets.dart';
+import '../widgets/shimmer_widgets.dart';
 import 'app_detail_screen.dart';
+import 'category_screen.dart';
 
 class StoreScreen extends StatefulWidget {
   const StoreScreen({super.key});
@@ -48,6 +50,16 @@ class _StoreScreenState extends State<StoreScreen> {
                         const BrandMark(size: 48, radius: 12),
                         const SizedBox(width: 12),
                         const Expanded(child: BrandTitle()),
+                        IconButton(
+                          tooltip: 'الفئات',
+                          onPressed: () => openCategoryBrowse(context),
+                          icon: const Icon(Icons.category_outlined),
+                        ),
+                        IconButton(
+                          tooltip: 'ترتيب وتصفية',
+                          onPressed: () => _openSortSheet(context, store),
+                          icon: const Icon(Icons.tune_rounded),
+                        ),
                         if (store.usingMock)
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -110,8 +122,24 @@ class _StoreScreenState extends State<StoreScreen> {
               ),
             ),
             if (store.loading && store.apps.isEmpty)
-              const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator()),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    const AppCardSkeleton(),
+                    const SizedBox(height: 12),
+                    const AppCardSkeleton(),
+                    const SizedBox(height: 12),
+                    const AppCardSkeleton(),
+                  ]),
+                ),
+              )
+            else if (store.error != null && store.apps.isEmpty)
+              SliverFillRemaining(
+                child: ErrorRetryBox(
+                  message: store.error!,
+                  onRetry: () => context.read<StoreProvider>().load(),
+                ),
               )
             else ...[
               if (featured.isNotEmpty &&
@@ -171,6 +199,47 @@ class _StoreScreenState extends State<StoreScreen> {
   void _open(String slug) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => AppDetailScreen(slug: slug)),
+    );
+  }
+
+  void _openSortSheet(BuildContext context, StoreProvider store) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'ترتيب النتائج',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+                ),
+                const SizedBox(height: 12),
+                ...[
+                  ('newest', 'الأحدث'),
+                  ('popular', 'الأكثر شعبية'),
+                  ('rating', 'الأعلى تقييمًا'),
+                ].map(
+                  (opt) => ListTile(
+                    title: Text(opt.$2),
+                    trailing: store.sort == opt.$1
+                        ? const Icon(Icons.check_rounded, color: AsColors.primaryDeep)
+                        : null,
+                    onTap: () {
+                      store.setSort(opt.$1);
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

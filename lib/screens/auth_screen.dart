@@ -4,6 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:url_launcher/url_launcher.dart';
+
+import '../config/api_config.dart';
 import '../providers/auth_provider.dart';
 import '../providers/library_provider.dart';
 import '../theme/app_theme.dart';
@@ -215,27 +218,16 @@ class _AuthScreenState extends State<AuthScreen>
                           )
                         : Text(signup ? 'إنشاء حساب' : 'دخول'),
                   ),
-                  const SizedBox(height: 18),
-                  const Text(
-                    'حسابات تجريبية',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: AsColors.text,
+                  if (!signup)
+                    TextButton(
+                      onPressed: () {
+                        launchUrl(
+                          Uri.parse('${ApiConfig.baseUrl}/forgot-password'),
+                          mode: LaunchMode.externalApplication,
+                        );
+                      },
+                      child: const Text('نسيت كلمة المرور؟'),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  _demoTile(
-                    'مستخدم',
-                    'user@appshelf.app',
-                    'user12345',
-                    role: 'user',
-                  ),
-                  _demoTile(
-                    'مطوّر',
-                    'dev@appshelf.app',
-                    'developer123',
-                    role: 'developer',
-                  ),
                 ],
               );
             },
@@ -274,29 +266,6 @@ class _AuthScreenState extends State<AuthScreen>
       style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
       onPressed: onPressed,
       child: child,
-    );
-  }
-
-  Widget _demoTile(
-    String label,
-    String email,
-    String password, {
-    required String role,
-  }) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
-      subtitle: Text('$email / $password'),
-      trailing: TextButton(
-        onPressed: () {
-          _email.text = email;
-          _password.text = password;
-          _role = role;
-          _tabs.index = 0;
-          _login();
-        },
-        child: const Text('جرّب'),
-      ),
     );
   }
 

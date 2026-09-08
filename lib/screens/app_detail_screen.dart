@@ -12,7 +12,9 @@ import '../providers/library_provider.dart';
 import '../services/api_client.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common_widgets.dart';
+import '../widgets/shimmer_widgets.dart';
 import 'auth_screen.dart';
+import 'developer_profile_screen.dart';
 
 class AppDetailScreen extends StatefulWidget {
   const AppDetailScreen({super.key, required this.slug});
@@ -29,6 +31,7 @@ class _AppDetailScreenState extends State<AppDetailScreen> {
   String? _error;
   bool _busy = false;
   List<Map<String, dynamic>> _reviews = [];
+  List<StoreApp> _related = [];
   int _rating = 5;
   final _comment = TextEditingController();
 
@@ -53,11 +56,13 @@ class _AppDetailScreenState extends State<AppDetailScreen> {
       final api = context.read<ApiClient>();
       final bundle = await api.fetchAppDetail(widget.slug);
       final reviews = await api.fetchReviews(bundle.app.id);
+      final related = await api.fetchRelatedApps(bundle.app.id);
       if (!mounted) return;
       final lib = context.read<LibraryProvider>();
       setState(() {
         _bundle = bundle;
         _reviews = reviews;
+        _related = related;
         _loading = false;
       });
       if (bundle.library.favorited) {
@@ -117,21 +122,9 @@ class _AppDetailScreenState extends State<AppDetailScreen> {
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const AppDetailSkeleton()
           : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(_error!),
-                      const SizedBox(height: 12),
-                      FilledButton(
-                        onPressed: _load,
-                        child: const Text('إعادة المحاولة'),
-                      ),
-                    ],
-                  ),
-                )
+              ? ErrorRetryBox(message: _error!, onRetry: _load)
               : _buildBody(lib, auth),
       bottomNavigationBar: _bundle == null
           ? null
@@ -176,11 +169,24 @@ class _AppDetailScreenState extends State<AppDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    publisher.name,
-                    style: const TextStyle(
-                      color: AsColors.primaryDeep,
-                      fontWeight: FontWeight.w600,
+                  InkWell(
+                    onTap: publisher.slug != null && publisher.slug!.isNotEmpty
+                        ? () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => DeveloperProfileScreen(
+                                  slug: publisher.slug!,
+                                ),
+                              ),
+                            );
+                          }
+                        : null,
+                    child: Text(
+                      publisher.name,
+                      style: const TextStyle(
+                        color: AsColors.primaryDeep,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -329,6 +335,25 @@ class _AppDetailScreenState extends State<AppDetailScreen> {
             ),
           );
         }),
+        if (_related.isNotEmpty) ...[
+          const SizedBox(height: 22),
+          const SectionHeader('تطبيقات مشابهة'),
+          ..._related.take(4).map(
+                (a) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: AppCardTile(
+                    app: a,
+                    onTap: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (_) => AppDetailScreen(slug: a.slug),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+        ],
       ],
     );
   }

@@ -415,4 +415,33 @@ class ApiClient {
     }
     throw ApiException('تعذّر تحميل تطبيقاتك', statusCode: res.statusCode);
   }
+
+  Future<DeveloperProfile?> fetchDeveloperProfile(String slug) async {
+    try {
+      final res = await _http
+          .get(_uri('/api/developers/$slug'), headers: _headers())
+          .timeout(const Duration(seconds: 8));
+      final data = await _decode(res);
+      if (res.statusCode >= 200 && res.statusCode < 300 && data is Map) {
+        return DeveloperProfile.fromJson(Map<String, dynamic>.from(data));
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  Future<List<StoreApp>> fetchRelatedApps(String appId) async {
+    try {
+      final res = await _http
+          .get(_uri('/api/apps/$appId/related'), headers: _headers())
+          .timeout(const Duration(seconds: 8));
+      final data = await _decode(res);
+      if (res.statusCode >= 200 && res.statusCode < 300 && data is List) {
+        return data
+            .whereType<Map>()
+            .map((e) => StoreApp.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      }
+    } catch (_) {}
+    return [];
+  }
 }

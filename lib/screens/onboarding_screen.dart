@@ -42,7 +42,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
     (
       title: 'دخول سريع',
-      body: 'تابع مع Google أو Apple، أو استخدم حسابًا تجريبيًا للتجربة فورًا.',
+      body: 'تابع مع Google أو Apple، أو أنشئ حسابًا بالبريد للوصول إلى مكتبتك.',
       icon: Icons.lock_open_rounded,
     ),
   ];

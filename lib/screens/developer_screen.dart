@@ -64,7 +64,7 @@ class _DeveloperScreenState extends State<DeveloperScreen> {
           padding: const EdgeInsets.all(20),
           child: EmptyStateBox(
             message:
-                'هذه المنطقة للمطوّرين. سجّل بحساب مطوّر أو استخدم الحساب التجريبي.',
+                'هذه المنطقة للمطوّرين. سجّل دخولك بحساب مطوّر للمتابعة.',
             actionLabel: 'دخول كمطوّر',
             onAction: () async {
               await Navigator.of(context).push(

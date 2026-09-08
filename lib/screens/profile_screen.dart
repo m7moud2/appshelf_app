@@ -9,9 +9,11 @@ import '../providers/library_provider.dart';
 import '../providers/store_provider.dart';
 import '../services/api_client.dart';
 import '../services/notification_service.dart';
+import '../services/update_checker.dart';
 import '../theme/app_theme.dart';
 import '../widgets/brand_mark.dart';
 import 'auth_screen.dart';
+import 'settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -27,6 +29,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _apiController.text = ApiConfig.baseUrl;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkUpdate());
+  }
+
+  Future<void> _checkUpdate() async {
+    final checker = UpdateChecker(context.read<ApiClient>());
+    final result = await checker.checkSelfUpdate(currentVersion: '1.0.0');
+    if (!mounted || !result.updateAvailable) return;
+    await NotificationService.instance.showAppUpdateAvailable(
+      result.storeVersion ?? '',
+    );
+    if (!mounted) return;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('تحديث متاح'),
+        content: Text(
+          'إصدار جديد ${result.storeVersion} متوفر على المتجر.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('لاحقًا'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              if (result.storeUrl != null) {
+                launchUrl(
+                  Uri.parse(result.storeUrl!),
+                  mode: LaunchMode.externalApplication,
+                );
+              }
+            },
+            child: const Text('تحميل'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -41,10 +81,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = auth.user;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('حسابي')),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-        children: [
+      appBar: AppBar(
+        title: const Text('حسابي'),
+        actions: [
+          IconButton(
+            tooltip: 'الإعدادات',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+            icon: const Icon(Icons.settings_outlined),
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await context.read<AuthProvider>().bootstrap();
+          if (context.read<AuthProvider>().isLoggedIn) {
+            await context.read<LibraryProvider>().refresh(requireAuth: false);
+          }
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+          children: [
           const Row(
             children: [
               BrandMark(size: 52, radius: 14),
@@ -213,6 +274,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onTap: () => NotificationService.instance.showCatalogTip(),
           ),
         ],
+        ),
       ),
     );
   }

@@ -12,6 +12,7 @@ class StoreProvider extends ChangeNotifier {
   String? error;
   String query = '';
   String category = 'all';
+  String sort = 'newest';
   bool usingMock = false;
 
   List<StoreApp> get filtered {
@@ -28,6 +29,14 @@ class StoreProvider extends ChangeNotifier {
             a.shortDescriptionAr.contains(query.trim()) ||
             a.category.toLowerCase().contains(q);
       }).toList();
+    }
+    list = [...list];
+    if (sort == 'popular') {
+      list.sort((a, b) => b.downloadsPlaceholder.compareTo(a.downloadsPlaceholder));
+    } else if (sort == 'rating') {
+      list.sort((a, b) => b.downloadsPlaceholder.compareTo(a.downloadsPlaceholder));
+    } else {
+      list.sort((a, b) => b.slug.compareTo(a.slug));
     }
     return list;
   }
@@ -56,6 +65,11 @@ class StoreProvider extends ChangeNotifier {
 
   void setCategory(String value) {
     category = value;
+    notifyListeners();
+  }
+
+  void setSort(String value) {
+    sort = value;
     notifyListeners();
   }
 
