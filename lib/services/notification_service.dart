@@ -19,6 +19,27 @@ class NotificationService {
     _ready = true;
   }
 
+  Future<void> showAppUpdateAvailable(String version) async {
+    await init();
+    const android = AndroidNotificationDetails(
+      'appshelf_updates',
+      'تحديثات المتجر',
+      channelDescription: 'تنبيهات عند توفر إصدار جديد من التطبيق',
+      importance: Importance.defaultImportance,
+      priority: Priority.defaultPriority,
+    );
+    await _plugin.show(
+      1002,
+      'تحديث متاح',
+      'إصدار $version من رف التطبيقات متوفر — افتح المتجر للتحميل.',
+      const NotificationDetails(
+        android: android,
+        iOS: DarwinNotificationDetails(),
+        macOS: DarwinNotificationDetails(),
+      ),
+    );
+  }
+
   Future<void> showCatalogTip() async {
     await init();
     const android = AndroidNotificationDetails(

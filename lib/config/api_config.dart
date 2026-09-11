@@ -7,6 +7,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 ///
 /// Priority: runtime prefs override → dart-define → platform defaults.
 class ApiConfig {
+  static const String appVersion = '1.0.0';
+
+  /// Production web/API (Vercel).
+  static const String productionBaseUrl = 'https://appshelf-nine.vercel.app';
+
   static const String _defineBase = String.fromEnvironment(
     'APPSHELF_API_BASE',
     defaultValue: '',
@@ -33,6 +38,11 @@ class ApiConfig {
     }
   }
 
+  static Future<void> useProductionServer() =>
+      setOverride(productionBaseUrl);
+
+  static Future<void> clearOverride() => setOverride(null);
+
   static String get baseUrl {
     if (_runtimeOverride != null && _runtimeOverride!.isNotEmpty) {
       return _runtimeOverride!;
@@ -44,6 +54,9 @@ class ApiConfig {
     } catch (_) {}
     return 'http://localhost:3000';
   }
+
+  static bool get isUsingProduction =>
+      baseUrl.replaceAll(RegExp(r'/$'), '') == productionBaseUrl;
 
   /// Public store listing for this mobile client.
   static String get storeListingUrl => '$baseUrl/apps/appshelf';

@@ -81,7 +81,7 @@ class _DeveloperProfileScreenState extends State<DeveloperProfileScreen> {
         children: [
           Row(
             children: [
-              CircleAvatar(
+              const CircleAvatar(
                 radius: 32,
                 backgroundColor: AsColors.softPrimary,
                 child: Icon(Icons.person, color: AsColors.primaryDeep, size: 32),

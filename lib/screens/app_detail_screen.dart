@@ -379,15 +379,16 @@ class _AppDetailScreenState extends State<AppDetailScreen> {
 
   Future<void> _submitReview() async {
     setState(() => _busy = true);
+    final api = context.read<ApiClient>();
+    final appId = _bundle!.app.id;
     try {
-      await context.read<ApiClient>().submitReview(
-            appId: _bundle!.app.id,
-            rating: _rating,
-            comment: _comment.text,
-          );
+      await api.submitReview(
+        appId: appId,
+        rating: _rating,
+        comment: _comment.text,
+      );
       _comment.clear();
-      final reviews =
-          await context.read<ApiClient>().fetchReviews(_bundle!.app.id);
+      final reviews = await api.fetchReviews(appId);
       if (!mounted) return;
       setState(() => _reviews = reviews);
       ScaffoldMessenger.of(context).showSnackBar(

@@ -34,7 +34,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _checkUpdate() async {
     final checker = UpdateChecker(context.read<ApiClient>());
-    final result = await checker.checkSelfUpdate(currentVersion: '1.0.0');
+    final result =
+        await checker.checkSelfUpdate(currentVersion: ApiConfig.appVersion);
     if (!mounted || !result.updateAvailable) return;
     await NotificationService.instance.showAppUpdateAvailable(
       result.storeVersion ?? '',
@@ -97,9 +98,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          await context.read<AuthProvider>().bootstrap();
-          if (context.read<AuthProvider>().isLoggedIn) {
-            await context.read<LibraryProvider>().refresh(requireAuth: false);
+          final authProv = context.read<AuthProvider>();
+          final libraryProv = context.read<LibraryProvider>();
+          await authProv.bootstrap();
+          if (authProv.isLoggedIn) {
+            await libraryProv.refresh(requireAuth: false);
           }
         },
         child: ListView(
