@@ -48,6 +48,7 @@ class ApiConfig {
       return _runtimeOverride!;
     }
     if (_defineBase.isNotEmpty) return _defineBase.replaceAll(RegExp(r'/$'), '');
+    if (!kDebugMode) return productionBaseUrl;
     if (kIsWeb) return 'http://localhost:3000';
     try {
       if (Platform.isAndroid) return 'http://10.0.2.2:3000';

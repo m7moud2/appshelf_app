@@ -6,6 +6,7 @@ import '../theme/app_theme.dart';
 import 'developer_screen.dart';
 import 'library_screen.dart';
 import 'profile_screen.dart';
+import '../widgets/store_error_boundary.dart';
 import 'store_screen.dart';
 
 class ShellScreen extends StatefulWidget {
@@ -22,7 +23,11 @@ class _ShellScreenState extends State<ShellScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final destinations = <_Dest>[
-      const _Dest(Icons.storefront_rounded, 'المتجر', StoreScreen()),
+      const _Dest(
+        Icons.storefront_rounded,
+        'المتجر',
+        StoreErrorBoundary(child: StoreScreen()),
+      ),
       const _Dest(Icons.bookmarks_rounded, 'مكتبتي', LibraryScreen()),
       if (auth.isDeveloper)
         const _Dest(

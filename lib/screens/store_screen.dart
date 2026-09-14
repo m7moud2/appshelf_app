@@ -111,7 +111,17 @@ class _StoreScreenState extends State<StoreScreen> {
                               child: ChoiceChip(
                                 label: Text(categoryLabel(key)),
                                 selected: store.category == key,
-                                onSelected: (_) => store.setCategory(key),
+                                onSelected: (_) {
+                                  store.setCategory(key);
+                                  if (key != 'all') {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute<void>(
+                                        builder: (_) =>
+                                            CategoryScreen(categoryId: key),
+                                      ),
+                                    );
+                                  }
+                                },
                               ),
                             ),
                         ],
